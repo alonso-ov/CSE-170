@@ -125,6 +125,8 @@ void FlatShading(float A[3], float B[3], float C[3], float D[3]) {
 
 	normTemp = glm::cross(U, V);
 
+
+	//push normal to the three verticies of the top right triangle
 	for (int i = 0; i < 3; i++) {
 		norms.push_back(normTemp[0]);
 		norms.push_back(normTemp[1]);
@@ -201,8 +203,51 @@ void FlatShading(float A[3], float B[3], float C[3], float D[3]) {
 
 }
 
-void SmoothShading(float A[3], float B[3], float C[3], float D[3]) {
-	norms.push_back(0.0f);
+void SmoothShading(float A[3], float B[3], float C[3], float D[3], float increment, float theta, float phi, float n, float R, float r) {
+
+	//center vector
+	float center[3];
+
+	float halfIncrement = increment / 2;
+
+	//just find the center
+	center[0] = (R + r * cos(theta + halfIncrement)) * cos(phi + halfIncrement);
+	center[1] = (R + r * cos(theta)) * sin(phi + halfIncrement);
+	center[2] = r * sin(theta + halfIncrement);
+
+	//top right triangle
+	for (int i = 0; i < 3; i++) {
+		norms.push_back(C[i] - center[i]);
+	}
+	norms.push_back(1.0f);
+
+	for (int i = 0; i < 3; i++) {
+		norms.push_back(B[i] - center[i]);
+	}
+	norms.push_back(1.0f);
+
+	for (int i = 0; i < 3; i++) {
+		norms.push_back(A[i] - center[i]);
+	}
+	norms.push_back(1.0f);
+
+	// lower left triangle
+	for (int i = 0; i < 3; i++) {
+		norms.push_back(A[i] - center[i]);
+	}
+	norms.push_back(1.0f);
+
+	for (int i = 0; i < 3; i++) {
+		norms.push_back(D[i] - center[i]);
+	}
+	norms.push_back(1.0f);
+
+	for (int i = 0; i < 3; i++) {
+		norms.push_back(C[i] - center[i]);
+	}
+	norms.push_back(1.0f);
+
+
 	n_outlines.push_back(0.0f);
 }
 
@@ -281,7 +326,7 @@ void ComputerTorusVerticies(float R, float r, float n) {
 				FlatShading(A, B, C, D);
 			}
 			else {
-				SmoothShading(A, B, C, D);
+				SmoothShading(A, B, C, D, increment, theta, phi, n, R, r);
 			}
 		
 			// next phi value
